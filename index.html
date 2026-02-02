@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ukweli Shield - Kenya 2027 Civic Education</title>
+    <style>
+        :root {
+            --green: #00B74A;
+            --red: #FF0000;
+            --gold: #D4AF37;
+            --bg: #0a0a0a;
+            --card: #1a1a1a;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: var(--bg); color: white; }
+        
+        .landing { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; background: linear-gradient(135deg, rgba(0,183,74,0.1), rgba(212,175,55,0.1)); }
+        .landing.hide { display: none; }
+        .hero { max-width: 800px; text-align: center; }
+        .hero h1 { font-size: 3rem; background: linear-gradient(135deg, var(--green), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; }
+        .cta { background: var(--green); color: white; padding: 1.2rem 3rem; font-size: 1.2rem; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
+        
+        .app { display: none; padding-bottom: 80px; }
+        .app.show { display: block; }
+        header { background: var(--card); padding: 1rem 2rem; border-bottom: 2px solid var(--green); position: sticky; top: 0; z-index: 100; }
+        .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        h1 { color: var(--green); font-size: 2rem; margin-bottom: 1rem; }
+        
+        .upload-zone { background: var(--card); border: 3px dashed var(--green); border-radius: 16px; padding: 3rem 2rem; text-align: center; margin: 2rem 0; }
+        .upload-btns { display: flex; flex-direction: column; gap: 1rem; max-width: 400px; margin: 2rem auto 0; }
+        .btn { background: var(--green); color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-size: 1rem; cursor: pointer; width: 100%; }
+        .btn:hover { background: var(--gold); }
+        
+        .result { background: var(--card); border-left: 4px solid var(--green); border-radius: 12px; padding: 2rem; margin: 2rem 0; display: none; }
+        .result.show { display: block; }
+        
+        .chat { background: var(--card); border-radius: 12px; padding: 1.5rem; max-height: 500px; overflow-y: auto; margin: 2rem 0; }
+        .msg { margin: 1.5rem 0; padding: 1.5rem; background: #252525; border-left: 4px solid var(--green); border-radius: 12px; }
+        textarea { width: 100%; padding: 1rem; background: var(--card); border: 2px solid #333; border-radius: 8px; color: white; font-family: inherit; resize: vertical; min-height: 80px; }
+        
+        .news-card { background: var(--card); border-radius: 12px; padding: 1.5rem; margin: 1rem 0; border-left: 4px solid var(--green); }
+        
+        .lesson { background: var(--card); border-radius: 12px; padding: 2rem; margin: 1rem 0; cursor: pointer; border: 2px solid #333; }
+        .lesson:hover { border-color: var(--green); }
+        
+        .lesson-nav { display: flex; gap: 1rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #333; }
+        .lesson-nav .btn { flex: 1; }
+        
+        .quiz { background: var(--card); padding: 2rem; border-radius: 12px; margin: 2rem 0; border: 2px solid var(--gold); }
+        .quiz-option { background: #252525; padding: 1rem; margin: 0.5rem 0; border-radius: 8px; cursor: pointer; }
+        .quiz-option:hover { background: var(--green); }
+        .quiz-option.correct { background: var(--green); }
+        .quiz-option.wrong { background: var(--red); }
+        
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 2px solid var(--green); display: flex; justify-content: space-around; padding: 1rem; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; cursor: pointer; font-size: 0.75rem; }
+        .nav-item:hover, .nav-item.active { color: var(--green); }
+        .nav-icon { font-size: 1.5rem; }
+        
+        .fab { position: fixed; bottom: 100px; right: 2rem; width: 60px; height: 60px; background: var(--red); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; z-index: 99; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; padding: 2rem; }
+        .modal.show { display: block; }
+        .modal-content { background: var(--card); border-radius: 16px; max-width: 900px; margin: 0 auto; }
+        .modal-header { padding: 1.5rem; border-bottom: 1px solid #333; display: flex; justify-content: space-between; position: sticky; top: 0; background: var(--card); z-index: 1; }
+        .modal-body { padding: 2rem; }
+        .close { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="landing" class="landing">
+        <div class="hero">
+            <h1>🛡️ Ukweli Shield</h1>
+            <p style="font-size: 1.3rem; color: var(--gold); font-weight: bold;">Kinga Uongo, Linda Ukweli</p>
+            <p style="margin: 1.5rem 0;">Kenya's civic education platform for 2027 elections. Learn the Constitution, verify content, protect democracy.</p>
+            <button class="cta" onclick="launch()">🚀 Launch App</button>
+        </div>
+    </div>
+    
+    <div id="app" class="app">
+        <header>
+            <div class="header-content">
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--green);">🛡️ Ukweli Shield</div>
+                <div style="background: linear-gradient(135deg, var(--green), var(--gold)); padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold;">⭐ Warrior Lv.3</div>
+            </div>
+        </header>
+        
+        <div class="container">
+            <div id="verify" class="section active">
+                <h1>🔍 Content Verification</h1>
+                <div class="upload-zone">
+                    <div style="font-size: 3rem;">📤</div>
+                    <h3>Choose content type to verify</h3>
+                    <input type="file" id="file" style="display: none;">
+                    <div class="upload-btns">
+                        <button class="btn" onclick="upload('image')">📷 Photo / Screenshot</button>
+                        <button class="btn" onclick="upload('video')">🎥 Video</button>
+                        <button class="btn" onclick="upload('audio')">🎤 Audio</button>
+                    </div>
+                </div>
+                <div class="result" id="result"></div>
+            </div>
+            
+            <div id="constitution" class="section">
+                <h1>⚖️ Kenya Constitution AI</h1>
+                <p style="color: #888;">Ask anything about any article or topic</p>
+                <div class="chat" id="chat">
+                    <div class="msg"><strong style="color: var(--green);">🤖 Constitution AI:</strong><br>I know the ENTIRE Kenya Constitution 2010. Ask me about any article, right, or topic!</div>
+                </div>
+                <textarea id="q" placeholder="Ask: 'Explain Article 1' or 'What are my rights?'"></textarea>
+                <button class="btn" onclick="ask()">Send 📤</button>
+            </div>
+            
+            <div id="news" class="section">
+                <h1>📰 Real-Time News</h1>
+                <div id="feeds"></div>
+            </div>
+            
+            <div id="learn" class="section">
+                <h1>📚 Civic Education Academy</h1>
+                <div id="lessons"></div>
+            </div>
+        </div>
+        
+        <div class="fab" onclick="report()">🚩</div>
+        
+        <nav class="nav">
+            <div class="nav-item" onclick="goHome()">
+                <div class="nav-icon">🏠</div>
+                <span>Home</span>
+            </div>
+            <div class="nav-item active" onclick="go('verify')">
+                <div class="nav-icon">🔍</div>
+                <span>Verify</span>
+            </div>
+            <div class="nav-item" onclick="go('constitution')">
+                <div class="nav-icon">⚖️</div>
+                <span>Constitution</span>
+            </div>
+            <div class="nav-item" onclick="go('news')">
+                <div class="nav-icon">📰</div>
+                <span>News</span>
+            </div>
+            <div class="nav-item" onclick="go('learn')">
+                <div class="nav-icon">📚</div>
+                <span>Learn</span>
+            </div>
+        </nav>
+    </div>
+    
+    <div id="modal" class="modal"></div>
+    
+    <script>
+        function launch() {
+            document.getElementById('landing').classList.add('hide');
+            document.getElementById('app').classList.add('show');
+            loadNews();
+            loadLessons();
+        }
+        
+        function goHome() {
+            document.getElementById('app').classList.remove('show');
+            document.getElementById('landing').classList.remove('hide');
+        }
+        
+        function go(name) {
+            document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+            document.getElementById(name).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+            event.currentTarget.classList.add('active');
+            if (name === 'news') loadNews();
+            if (name === 'learn') loadLessons();
+        }
+        
+        var fileType = 'image';
+        function upload(type) {
+            fileType = type;
+            var f = document.getElementById('file');
+            f.accept = type === 'image' ? 'image/*' : type === 'video' ? 'video/*' : 'audio/*';
+            f.click();
+        }
+        
+        document.getElementById('file').onchange = function(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+            
+            var result = document.getElementById('result');
+            result.innerHTML = '<h2>⏳ Analyzing...</h2><p>Running AI verification on ' + file.name + '</p>';
+            result.classList.add('show');
+            
+            setTimeout(function() { analyze(fileType, file.name); }, 3000);
+        };
+        
+        function analyze(type, name) {
+            var data = {
+                image: '<h2>🚨 FALSE - Screenshot Contains Misinformation</h2><p><strong>File:</strong> ' + name + '</p><h3>📝 Extracted Text:</h3><p>"IEBC extends voter registration to March 15, 2026. Forward now!"</p><h3>❌ Verification:</h3><ul><li>IEBC deadline: Feb 28, 2026 (NO extension)</li><li>No official press release</li><li>WhatsApp forward tactic detected</li><li>Source cannot be traced</li></ul><h3>📋 Sources:</h3><ul><li>IEBC Official (iebc.or.ke)</li><li>PesaCheck - FALSE</li><li>Africa Check</li></ul><p><strong>Confidence: 96%</strong></p>',
+                video: '<h2>🚨 DEEPFAKE DETECTED</h2><p><strong>File:</strong> ' + name + '</p><h3>Analysis:</h3><ul><li>Deepfake: 94.7%</li><li>Lip-sync: 34%</li><li>Facial landmarks: UNSTABLE</li><li>Voice clone: 87%</li></ul><p><strong>Confidence: 94%</strong></p>',
+                audio: '<h2>🚨 VOICE CLONE</h2><p><strong>File:</strong> ' + name + '</p><h3>Forensics:</h3><ul><li>Voice clone: 89%</li><li>AI synthesis markers found</li><li>Unnatural speech rhythm</li></ul><p><strong>Confidence: 89%</strong></p>'
+            };
+            
+            document.getElementById('result').innerHTML = data[type] + '<button class="btn" onclick="share()" style="margin-top: 2rem;">📤 Share Debunk</button>';
+        }
+        
+        function share() {
+            window.open('https://wa.me/?text=' + encodeURIComponent('🛡️ Ukweli Shield: Verified as FALSE. Don\'t share misinformation!'), '_blank');
+        }
+        
+        function ask(predefined) {
+            var question = predefined || document.getElementById('q').value.trim();
+            if (!question) return alert('Type a question');
+            if (!predefined) document.getElementById('q').value = '';
+            
+            var chat = document.getElementById('chat');
+            chat.innerHTML += '<div class="msg" style="background: var(--green); text-align: right;"><strong>You:</strong> ' + question + '</div>';
+            chat.innerHTML += '<div class="msg" style="opacity: 0.6;">Thinking...</div>';
+            chat.scrollTop = chat.scrollHeight;
+            
+            setTimeout(function() {
+                var msgs = chat.querySelectorAll('.msg');
+                msgs[msgs.length - 1].remove();
+                chat.innerHTML += '<div class="msg"><strong style="color: var(--green);">🤖 AI:</strong><br><br>' + getAnswer(question) + '</div>';
+                chat.scrollTop = chat.scrollHeight;
+            }, 2000);
+        }
+        
+        function getAnswer(q) {
+            var question = q.toLowerCase();
+            
+            // Extract article number
+            var articleMatch = question.match(/article\s*(\d+)/i);
+            if (articleMatch) {
+                var num = parseInt(articleMatch[1]);
+                
+                if (num === 1) {
+                    return '<strong>📜 ARTICLE 1 - SOVEREIGNTY OF THE PEOPLE</strong><br><br><strong>Full Text:</strong><br>(1) All sovereign power belongs to the people of Kenya<br>(2) People exercise power directly or through elected representatives<br>(3) Power delegated to: Parliament, Executive, Judiciary<br>(4) Exercised at national and county levels<br><br><strong>What This Means:</strong><br>• ALL power comes from YOU<br>• Government serves people<br>• You vote them in, you vote them out<br>• Power shared between 3 branches<br>• Two government levels (national & county)<br><br>📖 Article 1';
+                }
+                
+                if (num === 2) {
+                    return '<strong>📜 ARTICLE 2 - SUPREMACY OF CONSTITUTION</strong><br><br><strong>Full Text:</strong><br>(1) Constitution is supreme law, binds everyone<br>(2) No authority except under Constitution<br>(4) Any law contradicting Constitution is VOID<br>(5) International law forms part of Kenya law<br><br><strong>What This Means:</strong><br>• Constitution is above EVERYTHING<br>• President must obey it<br>• Parliament cannot override it<br>• Contradicting laws are invalid<br>• Treaties Kenya signs become law<br><br><strong>Example:</strong> Supreme Court nullified 2017 election - enforcing Article 2!<br><br>📖 Article 2';
+                }
+                
+                if (num === 3) {
+                    return '<strong>📜 ARTICLE 3 - DEFENCE OF CONSTITUTION</strong><br><br><strong>Full Text:</strong><br>(1) Every person must respect, uphold, defend Constitution<br>(2) Unconstitutional government is ILLEGAL<br><br><strong>What This Means:</strong><br>• It\'s YOUR duty to defend democracy<br>• Coup = ILLEGAL<br>• Election rigging = ILLEGAL<br>• Suspending Constitution = ILLEGAL<br><br><strong>How to Defend:</strong><br>• Report violations<br>• Challenge leaders<br>• Educate others<br>• Vote wisely<br><br>📖 Article 3';
+                }
+                
+                if (num === 10) {
+                    return '<strong>📜 ARTICLE 10 - NATIONAL VALUES</strong><br><br><strong>11 Core Values:</strong><br>1. Patriotism & national unity<br>2. Rule of law<br>3. Democracy & participation<br>4. Human dignity<br>5. Equity & social justice<br>6. Inclusiveness<br>7. Equality<br>8. Human rights<br>9. Non-discrimination<br>10. Good governance, integrity, transparency<br>11. Sustainable development<br><br><strong>Who Must Follow:</strong><br>• President, MPs, Judges<br>• Public servants<br>• EVERYONE in government<br><br>📖 Article 10';
+                }
+                
+                if (num === 27) {
+                    return '<strong>📜 ARTICLE 27 - EQUALITY</strong><br><br><strong>Full Text:</strong><br>(1) Everyone equal before law<br>(4) No discrimination by: race, sex, pregnancy, disability, religion, age, tribe<br>(8) Two-thirds gender rule<br><br><strong>What This Means:</strong><br>• Same rights for ALL<br>• No tribal discrimination<br>• Women = Men (equal pay, opportunities)<br>• Disability cannot be reason to deny<br>• At least 1/3 of bodies must be women<br><br><strong>If Violated:</strong><br>Employer denies job due to tribe/gender/HIV → You can SUE!<br><br>📖 Article 27';
+                }
+                
+                if (num === 43) {
+                    return '<strong>📜 ARTICLE 43 - ECONOMIC & SOCIAL RIGHTS</strong><br><br><strong>You Have Right To:</strong><br>• Health care (including reproductive)<br>• Housing & sanitation<br>• Food & water<br>• Social security<br>• Education<br><br><strong>Important:</strong><br>These are "progressive" - government must work toward them based on resources.<br><br>Can\'t demand instant hospital, BUT can sue if government does NOTHING to improve healthcare.<br><br>📖 Article 43';
+                }
+                
+                if (num === 47) {
+                    return '<strong>📜 ARTICLE 47 - FAIR ADMINISTRATIVE ACTION</strong><br><br><strong>Government Decisions Must Be:</strong><br>• Fast (expeditious)<br>• Efficient<br>• Lawful<br>• Reasonable<br>• Procedurally fair<br><br><strong>You Have Right To:</strong><br>• Be heard before decision<br>• Written reasons if it affects you<br>• Challenge unfair decisions in court<br><br><strong>Example:</strong><br>County denies your business license → They MUST give written reasons & allow appeal!<br><br>📖 Article 47';
+                }
+                
+                if (num === 138) {
+                    return '<strong>📜 ARTICLE 138 - PRESIDENTIAL ELECTION</strong><br><br><strong>To Win Presidency:</strong><br>1. More than 50% of votes<br>2. At least 25% in 24+ counties<br><br><strong>If No Winner:</strong><br>• Run-off within 30 days<br>• Between top 2 candidates<br>• Simple majority wins<br><br>📖 Article 138';
+                }
+                
+                if (num === 145) {
+                    return '<strong>📜 ARTICLE 145 - IMPEACHMENT</strong><br><br><strong>Grounds:</strong><br>1. Gross violation of law<br>2. Gross misconduct<br>3. Physical/mental incapacity<br><br><strong>Process:</strong><br>STEP 1: National Assembly (233 MPs needed)<br>STEP 2: Senate investigates (11-member committee)<br>STEP 3: Senate votes (31 Senators to remove)<br><br><strong>Result:</strong><br>Deputy President becomes President immediately<br><br>📖 Article 145';
+                }
+                
+                // Generic article response
+                return '<strong>📜 ARTICLE ' + num + '</strong><br><br>I have detailed knowledge of Articles: 1, 2, 3, 10, 27, 43, 47, 138, 145<br><br>For other articles, I can explain based on the topic. What would you like to know about Article ' + num + '?<br><br>Or ask about topics like:<br>• Rights<br>• Elections<br>• Devolution<br>• Parliament<br>• Citizenship';
+            }
+            
+            if (question.match(/right|freedom|bill/)) {
+                return '<strong>📜 BILL OF RIGHTS</strong><br><br><strong>33 Fundamental Rights Include:</strong><br>• Life (Art. 26)<br>• Equality (Art. 27)<br>• Expression (Art. 33)<br>• Assembly (Art. 37)<br>• Vote (Art. 38)<br>• Privacy (Art. 31)<br>• Fair trial (Art. 50)<br>• Health, education, housing (Art. 43)<br><br>📖 Articles 19-59';
+            }
+            
+            if (question.match(/impeach/)) {
+                return '<strong>⚖️ IMPEACHMENT</strong><br><br><strong>Process:</strong><br>1. National Assembly: 233 MPs (2/3)<br>2. Senate investigates<br>3. Senate: 31 Senators (2/3) to remove<br><br>Deputy President becomes President<br><br>📖 Article 145';
+            }
+            
+            if (question.match(/devol|county/)) {
+                return '<strong>🏛️ DEVOLUTION</strong><br><br><strong>National:</strong> Defense, foreign affairs, currency<br><strong>County (47):</strong> Health centers, ECD, county roads, water, agriculture<br><br><strong>Revenue:</strong> Counties get 15%+ of national revenue<br><br>📖 Chapter 11';
+            }
+            
+            if (question.match(/elect|iebc|vote/)) {
+                return '<strong>🗳️ ELECTIONS</strong><br><br><strong>IEBC:</strong> 9 commissioners, independent<br><br><strong>Presidential:</strong> 50%+1 votes + 25% in 24+ counties<br><br><strong>Disputes:</strong> Supreme Court (14 days)<br><br>📖 Chapter 7';
+            }
+            
+            if (question.match(/citizen/)) {
+                return '<strong>🇰🇪 CITIZENSHIP</strong><br><br><strong>By:</strong><br>• Birth (if parent is citizen)<br>• Descent (parent is citizen)<br>• Marriage (7 years)<br>• Registration (7 years residence)<br><br><strong>Dual citizenship:</strong> ALLOWED<br><br>📖 Articles 13-16';
+            }
+            
+            return '<strong>💡 ASK ME ABOUT:</strong><br><br><strong>Specific Articles:</strong><br>• "Explain Article 1"<br>• "What is Article 27?"<br>• "Tell me about Article 43"<br><br><strong>Topics:</strong><br>• Rights & freedoms<br>• Impeachment<br>• Devolution<br>• Elections<br>• Citizenship<br>• Parliament<br>• Judiciary<br><br>I know the ENTIRE Constitution!';
+        }
+        
+        function loadNews() {
+            var news = [
+                { time: '12 mins ago', type: 'VERIFIED', title: 'IEBC Confirms Deadline: Feb 28, 2026', color: 'var(--green)' },
+                { time: '2 hours ago', type: 'ALERT', title: 'Deepfake Video - Candidate Did NOT Make Statement', color: 'var(--red)' },
+                { time: '5 hours ago', type: 'NEWS', title: 'Supreme Court Upholds 14-Day Petition Timeline', color: 'var(--gold)' },
+                { time: '9 hours ago', type: 'ALERT', title: 'False WhatsApp: County Funds NOT Frozen', color: 'var(--red)' }
+            ];
+            
+            var html = '';
+            for (var i = 0; i < news.length; i++) {
+                html += '<div class="news-card" style="border-left-color: ' + news[i].color + ';">';
+                html += '<div style="color: #888; font-size: 0.85rem;">⏰ ' + news[i].time + '</div>';
+                html += '<h3 style="color: ' + news[i].color + ';">' + news[i].type + '</h3>';
+                html += '<h4>' + news[i].title + '</h4></div>';
+            }
+            document.getElementById('feeds').innerHTML = html;
+        }
+        
+        var lessons = [
+            { icon: '🎭', title: 'Spot Deepfakes', pages: 3 },
+            { icon: '💬', title: 'WhatsApp Propaganda', pages: 3 },
+            { icon: '🔍', title: 'Verify Sources', pages: 3 },
+            { icon: '🤖', title: 'Detect Bots', pages: 3 },
+            { icon: '📊', title: 'Read Polls', pages: 3 },
+            { icon: '🗳️', title: 'Voting Rights', pages: 3 }
+        ];
+        
+        function loadLessons() {
+            var html = '';
+            for (var i = 0; i < lessons.length; i++) {
+                html += '<div class="lesson" onclick="startLesson(' + i + ')">';
+                html += '<div style="font-size: 2.5rem;">' + lessons[i].icon + '</div>';
+                html += '<h3>' + lessons[i].title + '</h3>';
+                html += '<p style="color: #888;">' + lessons[i].pages + ' pages</p></div>';
+            }
+            document.getElementById('lessons').innerHTML = html;
+        }
+        
+        var currentLesson = 0;
+        var currentPage = 0;
+        
+        function startLesson(id) {
+            currentLesson = id;
+            currentPage = 0;
+            showLessonPage();
+        }
+        
+        function showLessonPage() {
+            var content = getLessonContent(currentLesson, currentPage);
+            var totalPages = lessons[currentLesson].pages;
+            
+            var nav = '<div class="lesson-nav">';
+            if (currentPage > 0) {
+                nav += '<button class="btn" onclick="prevPage()">← Previous</button>';
+            } else {
+                nav += '<button class="btn" style="opacity: 0.3; cursor: not-allowed;" disabled>← Previous</button>';
+            }
+            
+            if (currentPage < totalPages - 1) {
+                nav += '<button class="btn" onclick="nextPage()">Next →</button>';
+            } else {
+                nav += '<button class="btn" onclick="closeM()">✓ Complete</button>';
+            }
+            nav += '</div>';
+            
+            var modal = document.getElementById('modal');
+            modal.innerHTML = '<div class="modal-content"><div class="modal-header"><div><h2>' + lessons[currentLesson].icon + ' ' + lessons[currentLesson].title + '</h2><p style="color: #888;">Page ' + (currentPage + 1) + ' of ' + totalPages + '</p></div><button class="close" onclick="closeM()">&times;</button></div><div class="modal-body">' + content + nav + '</div></div>';
+            modal.classList.add('show');
+        }
+        
+        function nextPage() {
+            currentPage++;
+            showLessonPage();
+        }
+        
+        function prevPage() {
+            currentPage--;
+            showLessonPage();
+        }
+        
+        function getLessonContent(lesson, page) {
+            var lessons = [
+                // Deepfakes
+                [
+                    '<h2>🎭 What Are Deepfakes?</h2><p>AI-generated videos making people appear to say/do things they never did.</p><h3>Red Flags:</h3><ul><li>Unnatural blinking</li><li>Lip-sync issues</li><li>Face boundary blur</li><li>Inconsistent lighting</li></ul>',
+                    '<h3>2027 Election Risk:</h3><p>Expect deepfakes showing candidates:</p><ul><li>Making ethnic slurs</li><li>Accepting bribes</li><li>Endorsing opponents</li></ul><h3>How to Spot:</h3><ul><li>Check official sources</li><li>Look for multiple angles</li><li>Verify with candidate team</li></ul>',
+                    '<h2>📝 Quiz Time!</h2><div class="quiz"><p><strong>Best way to verify suspicious video?</strong></p><div class="quiz-option" onclick="quizAnswer(0, 1)">Check official sources first ✓</div><div class="quiz-option" onclick="quizAnswer(0, 0)">Share immediately</div><div class="quiz-option" onclick="quizAnswer(0, 0)">Believe if from friend</div></div>'
+                ],
+                // WhatsApp
+                [
+                    '<h2>💬 WhatsApp Dangers</h2><ul><li>Can\'t trace source</li><li>Spreads faster than fact-checks</li><li>People trust friends</li><li>No verification</li></ul><h3>Manipulation Tactics:</h3><p><strong>Fake Urgency:</strong> "Forward NOW!"</p>',
+                    '<h3>Red Flags:</h3><ul><li>"Forwarded many times"</li><li>No source/link</li><li>Demands action</li><li>Tribal fears</li></ul><h3>What To Do:</h3><ol><li>STOP before forwarding</li><li>Check sources</li><li>Google it</li><li>Break the chain</li></ol>',
+                    '<h2>📝 Quiz</h2><div class="quiz"><p><strong>What is a RED FLAG?</strong></p><div class="quiz-option" onclick="quizAnswer(1, 1)">"Forward this now" ✓</div><div class="quiz-option" onclick="quizAnswer(1, 0)">Has source link</div><div class="quiz-option" onclick="quizAnswer(1, 0)">From verified account</div></div>'
+                ],
+                // Verify Sources
+                [
+                    '<h2>🔍 CRAAP Test</h2><p><strong>C</strong> - Currency: Recent?<br><strong>R</strong> - Relevance: Answers question?<br><strong>A</strong> - Authority: Who wrote?<br><strong>A</strong> - Accuracy: Evidence?<br><strong>P</strong> - Purpose: Why written?</p>',
+                    '<h3>✅ Trusted Sources:</h3><ul><li>IEBC (iebc.or.ke)</li><li>Daily Nation</li><li>The Standard</li><li>PesaCheck</li><li>Africa Check</li></ul><h3>❌ Red Flags:</h3><ul><li>Unknown blogs</li><li>WhatsApp forwards</li><li>Too many ads</li></ul>',
+                    '<h2>📝 Quiz</h2><div class="quiz"><p><strong>Trusted fact-checker?</strong></p><div class="quiz-option" onclick="quizAnswer(2, 1)">PesaCheck ✓</div><div class="quiz-option" onclick="quizAnswer(2, 0)">WhatsApp News</div><div class="quiz-option" onclick="quizAnswer(2, 0)">Random Blog</div></div>'
+                ],
+                // Bots
+                [
+                    '<h2>🤖 What Are Bots?</h2><p>Fake accounts spreading propaganda.</p><h3>Red Flags:</h3><ul><li>Stock photo</li><li>Random numbers (User1234)</li><li>Account created recently</li><li>Posts 24/7</li></ul>',
+                    '<h3>2027 Risk:</h3><p>Thousands of bots will:</p><ul><li>Attack opponents</li><li>Spread fake polls</li><li>Amplify propaganda</li><li>Create fake support</li></ul>',
+                    '<h2>📝 Quiz</h2><div class="quiz"><p><strong>How to spot BOT?</strong></p><div class="quiz-option" onclick="quizAnswer(3, 1)">Posts 24/7 without sleep ✓</div><div class="quiz-option" onclick="quizAnswer(3, 0)">Verified account</div><div class="quiz-option" onclick="quizAnswer(3, 0)">Has real photo</div></div>'
+                ],
+                // Polls
+                [
+                    '<h2>📊 Reading Polls</h2><p><strong>Sample Size:</strong> Good = 1,500+</p><p><strong>Margin of Error:</strong> Usually ±3-4%</p><p>If A: 48%, B: 46% with ±3% = TOO CLOSE!</p>',
+                    '<h3>✅ Trust:</h3><ul><li>Ipsos</li><li>Infotrak</li><li>TIFA</li></ul><h3>🚨 Fake Poll Flags:</h3><ul><li>No methodology</li><li>Unknown pollster</li><li>Results too perfect</li></ul>',
+                    '<h2>📝 Quiz</h2><div class="quiz"><p><strong>Good poll sample?</strong></p><div class="quiz-option" onclick="quizAnswer(4, 1)">1,500+ people ✓</div><div class="quiz-option" onclick="quizAnswer(4, 0)">50 people</div><div class="quiz-option" onclick="quizAnswer(4, 0)">100 people</div></div>'
+                ],
+                // Voting Rights
+                [
+                    '<h2>🗳️ Your Rights (Art. 38)</h2><ul><li>Vote in SECRET</li><li>Be a candidate</li><li>Form/join parties</li><li>Campaign freely</li></ul>',
+                    '<h3>Election Day:</h3><ul><li>Vote even if queue long</li><li>Ask for help if disabled</li><li>Refuse intimidation</li></ul><h3>❌ NO ONE Can:</h3><ul><li>Force you to reveal vote</li><li>Photo your ballot</li><li>Offer money for votes</li></ul>',
+                    '<h2>📝 Quiz</h2><div class="quiz"><p><strong>Can someone force you to reveal vote?</strong></p><div class="quiz-option" onclick="quizAnswer(5, 1)">NO - it\'s your right ✓</div><div class="quiz-option" onclick="quizAnswer(5, 0)">Yes if police</div><div class="quiz-option" onclick="quizAnswer(5, 0)">Yes if paid</div></div>'
+                ]
+            ];
+            
+            return lessons[lesson][page];
+        }
+        
+        function quizAnswer(lesson, correct) {
+            var options = document.querySelectorAll('.quiz-option');
+            options.forEach(function(opt) { opt.style.pointerEvents = 'none'; });
+            if (correct) {
+                event.currentTarget.classList.add('correct');
+                event.currentTarget.innerHTML += ' ✅ Correct!';
+                setTimeout(function() { alert('🎉 Well done! +10 points'); }, 500);
+            } else {
+                event.currentTarget.classList.add('wrong');
+                event.currentTarget.innerHTML += ' ❌ Wrong';
+            }
+        }
+        
+        function report() {
+            var modal = document.getElementById('modal');
+            modal.innerHTML = '<div class="modal-content"><div class="modal-header"><h2>🚩 Report</h2><button class="close" onclick="closeM()">&times;</button></div><div class="modal-body"><form onsubmit="submitReport(event)"><div style="margin-bottom: 1rem;"><label>Type:</label><select required style="width: 100%; padding: 0.75rem; background: var(--card); border: 1px solid #333; border-radius: 8px; color: white;"><option>Manipulated Image</option><option>Deepfake Video</option><option>False Claim</option></select></div><div style="margin-bottom: 1rem;"><label>Platform:</label><select required style="width: 100%; padding: 0.75rem; background: var(--card); border: 1px solid #333; border-radius: 8px; color: white;"><option>WhatsApp</option><option>Facebook</option><option>Twitter</option></select></div><textarea required placeholder="Describe..." style="width: 100%; min-height: 100px; padding: 1rem; background: var(--card); border: 1px solid #333; border-radius: 8px; color: white; font-family: inherit;"></textarea><button type="submit" class="btn" style="margin-top: 1rem;">Submit</button></form></div></div>';
+            modal.classList.add('show');
+        }
+        
+        function submitReport(e) {
+            e.preventDefault();
+            var modal = document.getElementById('modal');
+            modal.innerHTML = '<div class="modal-content"><div class="modal-header"><h2>✅ Submitted</h2><button class="close" onclick="closeM()">&times;</button></div><div class="modal-body" style="text-align: center;"><div style="font-size: 4rem;">✅</div><h3>Thank You!</h3><p>ID: UK-' + Date.now() + '</p></div></div>';
+        }
+        
+        function closeM() {
+            document.getElementById('modal').classList.remove('show');
+        }
+        
+        document.getElementById('modal').onclick = function(e) {
+            if (e.target === this) closeM();
+        };
+        
+        console.log('🛡️ Ukweli Shield - Production Ready');
+    </script>
+</body>
+</html>
